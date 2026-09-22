@@ -2,45 +2,29 @@ import streamlit as st
 import numpy as np
 import tensorflow as tf
 
-# Load trained model
-model = tf.keras.models.load_model("employee_performance_ann.keras")
+model = tf.keras.models.load_model("machine_temperature_rnn.keras")
 
-st.title("Employee Performance Predictor")
+st.title("Machine Temperature Predictor")
 
-st.write("Enter the employee details:")
+st.write("Enter the previous two machine readings:")
 
-training_hours = st.number_input(
-    "Training Hours",
-    min_value=0,
-    max_value=100,
-    value=5
-)
+temp1 = st.number_input("Previous Timestamp 1 - Temperature")
+vibration1 = st.number_input("Previous Timestamp 1 - Vibration")
 
-attendance = st.number_input(
-    "Attendance (%)",
-    min_value=0,
-    max_value=100,
-    value=70
-)
+temp2 = st.number_input("Previous Timestamp 2 - Temperature")
+vibration2 = st.number_input("Previous Timestamp 2 - Vibration")
 
-if st.button("Predict Performance"):
+if st.button("Predict Next Temperature"):
 
-    # Prepare input
-    input_data = np.array([[training_hours, attendance]])
+    input_data = np.array([
+        [temp1, vibration1],
+        [temp2, vibration2]
+    ])
 
-    # Prediction
-    probability = model.predict(input_data, verbose=0)[0][0]
+    input_data = input_data.reshape(1, 2, 2)
 
-    if probability >= 0.5:
-        prediction = "Good"
-    else:
-        prediction = "Needs Improvement"
+    prediction = model.predict(input_data, verbose=0)
 
-    st.subheader("Prediction")
-    st.success(prediction)
+    st.subheader("Predicted Next Machine Temperature:")
 
-    st.write(
-        "Good Probability:",
-        round(float(probability) * 100, 2),
-        "%"
-    )
+    st.success(f"{prediction[0][0]:.2f} °C")
